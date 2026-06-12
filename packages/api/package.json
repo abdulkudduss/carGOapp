@@ -9,6 +9,11 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "gen:types": "openapi-typescript ${OPENAPI_URL:-http://localhost:8080/api-docs} -o src/generated/schema.ts",
+    "smoke": "node scripts/smoke.ts",
     "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0"
   }
 }
