@@ -8,6 +8,13 @@ web-build/
 dev-dist/
 *.tsbuildinfo
 
+# Exception: @cargo/tokens ships generated CSS (variables.css + theme.css) as a
+# committed artifact so every app build / dev server is deterministic without an
+# ordering dependency on a token build step. Regenerate with `pnpm --filter
+# @cargo/tokens gen:css`.
+!packages/tokens/dist/
+!packages/tokens/dist/**
+
 # Expo / React Native
 .expo/
 .expo-shared/
@@ -32,3 +39,6 @@ yarn-error.log*
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Claude Code local settings
+.claude/

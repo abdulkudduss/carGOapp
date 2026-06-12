@@ -1,1 +1,5 @@
 @import 'tailwindcss';
+/* Color/spacing/radii/type scales → Tailwind utilities (bg-accent-600, …). */
+@import '@cargo/tokens/theme.css';
+/* Full :root var export — badge/claim colors, composed shadows, durations, z. */
+@import '@cargo/tokens/variables.css';
