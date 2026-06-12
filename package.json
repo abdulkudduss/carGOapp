@@ -1,0 +1,26 @@
+{
+  "name": "cargo-frontend",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.5.3",
+  "engines": {
+    "node": ">=22.13.0",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "dev:web-ops": "pnpm --filter web-ops dev",
+    "dev:pvz": "pnpm --filter pvz dev",
+    "dev:mobile": "pnpm --filter mobile start",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.4.1",
+    "globals": "17.6.0",
+    "prettier": "3.8.4",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.61.0"
+  }
+}
