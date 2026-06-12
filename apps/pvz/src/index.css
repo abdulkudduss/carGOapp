@@ -3,3 +3,5 @@
 @import '@cargo/tokens/theme.css';
 /* Full :root var export — badge/claim colors, composed shadows, durations, z. */
 @import '@cargo/tokens/variables.css';
+/* @cargo/ui component styles + the role/density (--cui-*) seams. */
+@import '@cargo/ui/styles.css';

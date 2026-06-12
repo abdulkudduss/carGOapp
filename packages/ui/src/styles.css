@@ -1,0 +1,586 @@
+/* @cargo/ui — component stylesheet.
+ *
+ * Self-contained: it consumes ONLY CSS custom properties from
+ * `@cargo/tokens/variables.css` (must be imported by the app first) plus the
+ * two `--cui-*` layers defined below. It deliberately does NOT use Tailwind
+ * utilities — Tailwind 4 auto-content-detection skips symlinked node_modules
+ * packages, so library internals would silently lose their styles. Apps keep
+ * Tailwind for screen/layout; the library stands on token vars.
+ *
+ * Two `--cui-*` layers sit between raw tokens and components:
+ *   1. ROLE  — the dark-theme seam. Mirrors the `role` object in
+ *      @cargo/tokens (which is NOT emitted as CSS by the token generator).
+ *      Components read these, never raw `--color-*` steps, so a future dark
+ *      theme remaps roles here instead of touching every component.
+ *   2. DENSITY — the compact/comfortable seam. `[data-density]` on an app root
+ *      remaps the two token type scales + control sizing into one semantic set
+ *      of vars. Components read those, so they never hardcode a density.
+ */
+
+/* ── Role layer (dark-theme seam; mirrors @cargo/tokens `role`) ───────────── */
+:root {
+  --cui-bg-app: var(--color-neutral-50);
+  --cui-bg-surface: #ffffff;
+  --cui-bg-sunken: var(--color-neutral-100);
+
+  --cui-text-primary: var(--color-neutral-900);
+  --cui-text-secondary: var(--color-neutral-600);
+  --cui-text-muted: var(--color-neutral-500);
+  --cui-text-inverse: var(--color-neutral-50);
+
+  --cui-border-subtle: var(--color-neutral-200);
+  --cui-border-default: var(--color-neutral-300);
+  --cui-border-strong: var(--color-neutral-400);
+
+  --cui-accent: var(--color-accent-600);
+  --cui-accent-hover: var(--color-accent-700);
+  --cui-accent-subtle: var(--color-accent-50);
+  --cui-on-accent: #ffffff;
+
+  --cui-focus: var(--color-info-500);
+
+  --cui-intent-danger-fg: var(--color-danger-700);
+  --cui-intent-danger-bg: var(--color-danger-50);
+  --cui-intent-danger-border: var(--color-danger-200);
+}
+
+/* ── Density layer (compact/comfortable seam) ─────────────────────────────── */
+/* Default = comfortable (the safer touch-target baseline) so a root that
+ * forgets to set data-density still meets the ≥44px accessibility floor. */
+:root,
+[data-density='comfortable'] {
+  --cui-font-size: var(--text-comfortable-md-size);
+  --cui-line-height: var(--text-comfortable-md-line);
+  --cui-font-size-sm: var(--text-comfortable-sm-size);
+  --cui-line-height-sm: var(--text-comfortable-sm-line);
+  --cui-font-size-lg: var(--text-comfortable-lg-size);
+  --cui-line-height-lg: var(--text-comfortable-lg-line);
+
+  --cui-control-min-h: 44px; /* TZ §10 — touch target ≥ 44px */
+  --cui-control-pad-x: var(--space-4);
+  --cui-control-pad-y: var(--space-3);
+  --cui-tap-min: 44px;
+
+  --cui-card-pad: var(--space-6);
+  --cui-row-pad-y: var(--space-3);
+  --cui-row-pad-x: var(--space-4);
+  --cui-gap: var(--space-3);
+}
+
+[data-density='compact'] {
+  --cui-font-size: var(--text-compact-md-size);
+  --cui-line-height: var(--text-compact-md-line);
+  --cui-font-size-sm: var(--text-compact-sm-size);
+  --cui-line-height-sm: var(--text-compact-sm-line);
+  --cui-font-size-lg: var(--text-compact-lg-size);
+  --cui-line-height-lg: var(--text-compact-lg-line);
+
+  --cui-control-min-h: 32px; /* keyboard/mouse; no 44px floor needed */
+  --cui-control-pad-x: var(--space-3);
+  --cui-control-pad-y: var(--space-1);
+  --cui-tap-min: 0px;
+
+  --cui-card-pad: var(--space-4);
+  --cui-row-pad-y: var(--space-1);
+  --cui-row-pad-x: var(--space-3);
+  --cui-gap: var(--space-2);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+.cui {
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+}
+.cui *,
+.cui *::before,
+.cui *::after {
+  box-sizing: border-box;
+}
+
+/* Shared focus ring — driven by the role `focus` token (info-500). */
+.cui-focusable:focus-visible {
+  outline: 2px solid var(--cui-focus);
+  outline-offset: 2px;
+}
+
+/* ── Button ───────────────────────────────────────────────────────────────── */
+.cui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--cui-control-min-h);
+  min-width: var(--cui-tap-min);
+  padding: var(--cui-control-pad-y) var(--cui-control-pad-x);
+  font-family: var(--font-sans);
+  font-size: var(--cui-font-size);
+  line-height: var(--cui-line-height);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    color var(--duration-fast) ease;
+}
+.cui-btn:disabled,
+.cui-btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cui-btn--primary {
+  background-color: var(--cui-accent);
+  color: var(--cui-on-accent);
+}
+.cui-btn--primary:not(:disabled):hover {
+  background-color: var(--cui-accent-hover);
+}
+
+.cui-btn--secondary {
+  background-color: var(--cui-bg-surface);
+  color: var(--cui-text-primary);
+  border-color: var(--cui-border-default);
+}
+.cui-btn--secondary:not(:disabled):hover {
+  background-color: var(--cui-bg-sunken);
+}
+
+.cui-btn--ghost {
+  background-color: transparent;
+  color: var(--cui-accent);
+}
+.cui-btn--ghost:not(:disabled):hover {
+  background-color: var(--cui-accent-subtle);
+}
+
+.cui-btn--danger {
+  background-color: var(--cui-intent-danger-fg);
+  color: var(--cui-on-accent);
+}
+.cui-btn--danger:not(:disabled):hover {
+  background-color: var(--color-danger-800);
+}
+
+.cui-btn--full {
+  width: 100%;
+}
+
+/* ── Badge (StatusBadge / ClaimBadge share this shell) ────────────────────── */
+.cui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 100%;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: var(--cui-font-size-sm);
+  line-height: var(--cui-line-height-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+.cui-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  flex: none;
+}
+.cui-badge__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Input / field ────────────────────────────────────────────────────────── */
+.cui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.cui-label {
+  font-size: var(--cui-font-size-sm);
+  line-height: var(--cui-line-height-sm);
+  font-weight: var(--weight-medium);
+  color: var(--cui-text-secondary);
+}
+.cui-input {
+  width: 100%;
+  min-height: var(--cui-control-min-h);
+  padding: var(--cui-control-pad-y) var(--cui-control-pad-x);
+  font-family: var(--font-sans);
+  font-size: var(--cui-font-size);
+  line-height: var(--cui-line-height);
+  color: var(--cui-text-primary);
+  background: var(--cui-bg-surface);
+  border: 1px solid var(--cui-border-default);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+}
+.cui-input::placeholder {
+  color: var(--cui-text-muted);
+}
+.cui-input:hover:not(:disabled) {
+  border-color: var(--cui-border-strong);
+}
+.cui-input:focus {
+  outline: none;
+  border-color: var(--cui-focus);
+  box-shadow: 0 0 0 2px var(--cui-focus);
+}
+.cui-input:disabled {
+  background: var(--cui-bg-sunken);
+  color: var(--cui-text-muted);
+  cursor: not-allowed;
+}
+.cui-input--invalid,
+.cui-input--invalid:focus {
+  border-color: var(--cui-intent-danger-fg);
+  box-shadow: 0 0 0 2px var(--cui-intent-danger-bg);
+}
+.cui-input--mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+.cui-hint {
+  font-size: var(--cui-font-size-sm);
+  line-height: var(--cui-line-height-sm);
+  color: var(--cui-text-muted);
+}
+.cui-error {
+  font-size: var(--cui-font-size-sm);
+  line-height: var(--cui-line-height-sm);
+  color: var(--cui-intent-danger-fg);
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.cui-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--cui-bg-surface);
+  border: 1px solid var(--cui-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.cui-card--interactive {
+  cursor: pointer;
+  transition:
+    box-shadow var(--duration-fast) ease,
+    border-color var(--duration-fast) ease;
+}
+.cui-card--interactive:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--cui-border-default);
+}
+.cui-card__header,
+.cui-card__body,
+.cui-card__footer {
+  padding: var(--cui-card-pad);
+}
+.cui-card__header {
+  border-bottom: 1px solid var(--cui-border-subtle);
+  font-weight: var(--weight-semibold);
+  color: var(--cui-text-primary);
+}
+.cui-card__footer {
+  border-top: 1px solid var(--cui-border-subtle);
+  background: var(--cui-bg-sunken);
+}
+
+/* ── Table ────────────────────────────────────────────────────────────────── */
+.cui-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--cui-border-subtle);
+  border-radius: var(--radius-lg);
+}
+.cui-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--cui-font-size);
+  line-height: var(--cui-line-height);
+  color: var(--cui-text-primary);
+}
+.cui-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  font-size: var(--cui-font-size-sm);
+  line-height: var(--cui-line-height-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--cui-text-secondary);
+  background: var(--cui-bg-sunken);
+  padding: var(--cui-row-pad-y) var(--cui-row-pad-x);
+  border-bottom: 1px solid var(--cui-border-default);
+  white-space: nowrap;
+}
+.cui-table tbody td {
+  padding: var(--cui-row-pad-y) var(--cui-row-pad-x);
+  border-bottom: 1px solid var(--cui-border-subtle);
+  vertical-align: middle;
+}
+.cui-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.cui-table tbody tr:hover {
+  background: var(--cui-bg-sunken);
+}
+.cui-table--mono-col {
+  font-family: var(--font-mono);
+}
+
+/* ── Timeline (status axis only — TZ §3) ──────────────────────────────────── */
+.cui-timeline {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cui-timeline__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--cui-gap);
+}
+.cui-timeline__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cui-timeline__dot {
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--cui-bg-surface);
+  box-shadow: 0 0 0 1px var(--cui-border-default);
+  flex: none;
+}
+.cui-timeline__dot--current {
+  box-shadow: 0 0 0 3px var(--cui-accent-subtle);
+}
+.cui-timeline__line {
+  width: 2px;
+  flex: 1 1 auto;
+  min-height: var(--space-4);
+  background: var(--cui-border-default);
+  margin: 2px 0;
+}
+.cui-timeline__item--upcoming .cui-timeline__line,
+.cui-timeline__item--upcoming .cui-timeline__dot {
+  opacity: 0.5;
+}
+.cui-timeline__body {
+  padding-bottom: var(--cui-gap);
+}
+.cui-timeline__meta {
+  margin-top: 2px;
+  font-size: var(--cui-font-size-sm);
+  line-height: var(--cui-line-height-sm);
+  color: var(--cui-text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ── Overlay + Sheet/Modal ────────────────────────────────────────────────── */
+.cui-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  background: rgba(26, 23, 18, 0.45);
+  animation: cui-fade-in var(--duration-fast) ease;
+}
+.cui-overlay--center {
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.cui-overlay--right {
+  justify-content: flex-end;
+}
+.cui-surface {
+  display: flex;
+  flex-direction: column;
+  background: var(--cui-bg-surface);
+  color: var(--cui-text-primary);
+  box-shadow: var(--shadow-lg);
+}
+.cui-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - var(--space-8));
+  border-radius: var(--radius-lg);
+  animation: cui-pop-in var(--duration-normal) ease;
+}
+.cui-sheet {
+  width: min(420px, 100vw);
+  height: 100%;
+  animation: cui-slide-right var(--duration-normal) ease;
+}
+.cui-surface__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--cui-card-pad);
+  border-bottom: 1px solid var(--cui-border-subtle);
+  font-size: var(--cui-font-size-lg);
+  line-height: var(--cui-line-height-lg);
+  font-weight: var(--weight-semibold);
+}
+.cui-surface__body {
+  padding: var(--cui-card-pad);
+  overflow-y: auto;
+}
+.cui-surface__footer {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding: var(--cui-card-pad);
+  border-top: 1px solid var(--cui-border-subtle);
+}
+.cui-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--cui-control-min-h);
+  min-height: var(--cui-control-min-h);
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--cui-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.cui-iconbtn:hover {
+  background: var(--cui-bg-sunken);
+}
+
+/* ── Toast ────────────────────────────────────────────────────────────────── */
+.cui-toast-viewport {
+  position: fixed;
+  z-index: var(--z-toast);
+  bottom: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(360px, calc(100vw - var(--space-8)));
+}
+.cui-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--cui-row-pad-y) var(--cui-row-pad-x);
+  background: var(--cui-bg-surface);
+  border: 1px solid var(--cui-border-subtle);
+  border-left: 3px solid var(--cui-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: var(--cui-font-size);
+  line-height: var(--cui-line-height);
+  color: var(--cui-text-primary);
+  animation: cui-pop-in var(--duration-normal) ease;
+}
+.cui-toast--success {
+  border-left-color: var(--color-success-600);
+}
+.cui-toast--danger {
+  border-left-color: var(--cui-intent-danger-fg);
+}
+.cui-toast--warning {
+  border-left-color: var(--color-warning-600);
+}
+.cui-toast--info {
+  border-left-color: var(--color-info-600);
+}
+.cui-toast__body {
+  flex: 1;
+}
+.cui-toast__title {
+  font-weight: var(--weight-semibold);
+}
+.cui-toast__desc {
+  color: var(--cui-text-secondary);
+  font-size: var(--cui-font-size-sm);
+  line-height: var(--cui-line-height-sm);
+}
+
+/* ── Skeleton ─────────────────────────────────────────────────────────────── */
+.cui-skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--cui-bg-sunken) 25%,
+    var(--color-neutral-200) 37%,
+    var(--cui-bg-sunken) 63%
+  );
+  background-size: 400% 100%;
+  border-radius: var(--radius-sm);
+  animation: cui-shimmer 1.4s ease infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cui-skeleton {
+    animation: none;
+  }
+}
+
+/* ── EmptyState ───────────────────────────────────────────────────────────── */
+.cui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  color: var(--cui-text-secondary);
+}
+.cui-empty__icon {
+  font-size: 32px;
+  line-height: 1;
+}
+.cui-empty__title {
+  font-size: var(--cui-font-size-lg);
+  line-height: var(--cui-line-height-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--cui-text-primary);
+}
+.cui-empty__desc {
+  max-width: 42ch;
+  color: var(--cui-text-muted);
+}
+
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
+@keyframes cui-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes cui-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+@keyframes cui-slide-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes cui-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

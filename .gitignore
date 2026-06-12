@@ -6,6 +6,7 @@ dist/
 build/
 web-build/
 dev-dist/
+storybook-static/
 *.tsbuildinfo
 
 # Exception: @cargo/tokens ships generated CSS (variables.css + theme.css) as a
