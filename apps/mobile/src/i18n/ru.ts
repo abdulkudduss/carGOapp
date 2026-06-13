@@ -23,9 +23,9 @@ export const ru = {
 
   code: {
     title: 'Подтверждение',
-    subtitle: 'Введите 6-значный код из SMS на номер {phone}',
+    // {len} — длина кода (из OTP_CODE_LENGTH), не хардкодим число в тексте.
+    subtitle: 'Введите {len}-значный код из SMS на номер {phone}',
     label: 'Код из SMS',
-    placeholder: '______',
     submit: 'Войти',
     resend: 'Отправить снова',
     resendIn: 'Отправить снова через {sec} с',
@@ -51,6 +51,6 @@ export const ru = {
   validation: {
     phoneRequired: 'Введите номер телефона',
     phoneFormat: 'Номер в формате 996XXXXXXXXX (12 цифр)',
-    codeLength: 'Код состоит из 6 цифр',
+    codeLength: 'Код состоит из {len} цифр',
   },
 } as const;

@@ -1,5 +1,7 @@
 // CodeScreen — step 2 of OTP login (TZ §6.1). Reference patterns:
-//   • 6-digit code via RHF + zod (<Controller>, same as PhoneScreen).
+//   • OTP code (length = OTP_CODE_LENGTH, server contract — TZ §8 "server is the
+//     source of truth") via RHF + zod (<Controller>, same as PhoneScreen). The
+//     length lives in ONE place (src/config/otp.ts); never hardcode it per-screen.
 //   • Verify = TanStack mutation; Button shows a loader while pending.
 //   • Resend countdown is driven by the SERVER value (route param retryAfterSec),
 //     NOT a hardcoded timer. "Отправить снова" is disabled until it hits 0; a
@@ -23,12 +25,21 @@ import { useRequestOtp, useVerifyOtp } from '../api/hooks';
 import { errorToMessage } from '../api/errorToMessage';
 import { tokenStore } from '../api/client';
 import { useSessionStore } from '../store/session';
+import { OTP_CODE_LENGTH } from '../config/otp';
 import type { AuthScreenProps } from '../navigation/types';
 
+// Exactly OTP_CODE_LENGTH digits, kept as a string (leading zeros preserved).
+// (t() at module load bakes the active locale — see the note in PhoneScreen.)
 const schema = z.object({
-  code: z.string().regex(/^\d{6}$/, t('validation.codeLength')),
+  code: z
+    .string()
+    .regex(new RegExp(`^\\d{${OTP_CODE_LENGTH}}$`), t('validation.codeLength', { len: OTP_CODE_LENGTH })),
 });
 type FormValues = z.infer<typeof schema>;
+
+// Visual placeholder derived from the length, so the cell count tracks the
+// constant (no second source of truth in the dictionary).
+const CODE_PLACEHOLDER = '_'.repeat(OTP_CODE_LENGTH);
 
 export function CodeScreen({ route }: AuthScreenProps<'Code'>) {
   const { phone, retryAfterSec } = route.params;
@@ -85,7 +96,7 @@ export function CodeScreen({ route }: AuthScreenProps<'Code'>) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('code.title')}</Text>
-      <Text style={styles.subtitle}>{t('code.subtitle', { phone })}</Text>
+      <Text style={styles.subtitle}>{t('code.subtitle', { phone, len: OTP_CODE_LENGTH })}</Text>
 
       <Controller
         control={control}
@@ -93,9 +104,9 @@ export function CodeScreen({ route }: AuthScreenProps<'Code'>) {
         render={({ field }) => (
           <Input
             label={t('code.label')}
-            placeholder={t('code.placeholder')}
+            placeholder={CODE_PLACEHOLDER}
             keyboardType="number-pad"
-            maxLength={6}
+            maxLength={OTP_CODE_LENGTH}
             mono
             autoFocus
             value={field.value}
