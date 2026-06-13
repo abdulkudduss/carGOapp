@@ -4,11 +4,10 @@
     "strict": true,
     "jsx": "react-jsx",
     "noEmit": true,
-    // Workspace packages (@cargo/api, @cargo/tokens) are consumed as TS source
-    // (their package.json "main" points at ./src/index.ts) and use explicit .ts
-    // import specifiers. Valid here because Expo's base sets moduleResolution
-    // "bundler" + noEmit. Metro/babel transpile the same source at runtime.
     "allowImportingTsExtensions": true
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }

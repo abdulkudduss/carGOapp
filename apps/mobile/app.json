@@ -10,11 +10,18 @@
       "ios",
       "android"
     ],
+    "android": {
+      "package": "kg.nbm.cargo.mobile"
+    },
     "plugins": [
       "expo-secure-store"
     ],
     "extra": {
-      "apiBaseUrl": "http://localhost:8080"
-    }
+      "apiBaseUrl": "http://localhost:8080",
+      "eas": {
+        "projectId": "f45f1d69-d0d9-42f2-bc91-a2129d541ea1"
+      }
+    },
+    "owner": "milbon"
   }
 }
