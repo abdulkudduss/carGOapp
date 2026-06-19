@@ -14,3 +14,18 @@ export type AuthScreenProps<T extends keyof AuthStackParamList> = NativeStackScr
   AuthStackParamList,
   T
 >;
+
+// CLIENT stack — the authenticated home tree for role=CLIENT. Starts with the
+// address screen (TZ §6.2); grows as the frontender adds parcels/claim/etc.
+export type ClientStackParamList = {
+  Address: undefined;
+  ParcelList: undefined;
+  ParcelDetail: { parcelId: string };
+  TrackSearch: undefined;
+  PreAlertList: undefined;
+};
+
+export type ClientScreenProps<T extends keyof ClientStackParamList> = NativeStackScreenProps<
+  ClientStackParamList,
+  T
+>;

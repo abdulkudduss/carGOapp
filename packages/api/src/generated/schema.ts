@@ -218,7 +218,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Самостоятельно привязать UNCLAIMED-посылку к своему аккаунту */
+        /**
+         * Самостоятельно привязать UNCLAIMED-посылку к своему аккаунту
+         * @description Действие «одним тапом» (ТЗ §6.4): посылка уже принята на складе, декларационные данные не передаются. Тело можно не отправлять; опционально — comment. Клиент берётся из JWT.
+         */
         post: operations["claim"];
         delete?: never;
         options?: never;
@@ -233,7 +236,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Список ожидаемых посылок клиента (со статусом активен/использован) */
+        /**
+         * Список ожидаемых посылок клиента
+         * @description По умолчанию (status=ACTIVE) возвращаются только не отменённые (активные + сработавшие). status=CANCELLED — только отменённые, status=ALL — все. Неизвестное значение трактуется как ACTIVE.
+         */
         get: operations["listPreAlerts"];
         put?: never;
         /** Создать ожидаемую посылку (pre-alert) */
@@ -533,23 +539,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parcels/track": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Поиск посылки по трек-номеру (без авторизации) */
-        get: operations["track"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -618,6 +607,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/parcels/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Поиск посылки по трек-номеру
+         * @description Для залогиненного клиента. Возвращает parcel_id и claimable, чтобы найденную UNCLAIMED-посылку можно было сразу привязать (claim).
+         */
+        get: operations["search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/issuance/{id}": {
         parameters: {
             query?: never;
@@ -661,6 +670,23 @@ export interface paths {
         };
         /** Посылки клиента, доступные к выдаче (AT_KG/DELIVERY, CLAIMED) */
         get: operations["availableParcels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Справочник категорий товаров (только активные, для pre-alert) */
+        get: operations["listCategories"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1068,14 +1094,7 @@ export interface components {
             created_at?: string;
         };
         ClaimRequest: {
-            shopName: string;
-            /** Format: int64 */
-            categoryId: number;
-            declaredValue: number;
-            currency?: string;
-            evidence?: {
-                [key: string]: Record<string, never>;
-            };
+            comment?: string;
         };
         CreatePreAlertRequest: {
             currency?: string;
@@ -1281,20 +1300,6 @@ export interface components {
             name?: string;
             address?: string;
         };
-        ApiResponseParcelTrackResponse: {
-            success?: boolean;
-            code?: string;
-            message?: string;
-            data?: components["schemas"]["ParcelTrackResponse"];
-        };
-        ParcelTrackResponse: {
-            status?: string;
-            location?: string;
-            claimable?: boolean;
-            message?: string;
-            parcel_code?: string;
-            claim_status?: string;
-        };
         ApiResponseListPreAlertResponse: {
             success?: boolean;
             code?: string;
@@ -1353,6 +1358,22 @@ export interface components {
             /** Format: date-time */
             claimed_at?: string;
         };
+        ApiResponseParcelSearchResponse: {
+            success?: boolean;
+            code?: string;
+            message?: string;
+            data?: components["schemas"]["ParcelSearchResponse"];
+        };
+        ParcelSearchResponse: {
+            status?: string;
+            location?: string;
+            claimable?: boolean;
+            message?: string;
+            /** Format: int64 */
+            parcel_id?: number;
+            parcel_code?: string;
+            claim_status?: string;
+        };
         ApiResponseClientDto: {
             success?: boolean;
             code?: string;
@@ -1381,6 +1402,20 @@ export interface components {
             status?: "AT_JP" | "PACKED" | "SHIPPED" | "CUSTOMS" | "AT_KG" | "DELIVERY" | "DONE" | "RETURNED" | "LOST" | "DISPOSED";
             /** Format: int32 */
             weightG?: number;
+        };
+        ApiResponseListCategoryResponse: {
+            success?: boolean;
+            code?: string;
+            message?: string;
+            data?: components["schemas"]["CategoryResponse"][];
+        };
+        CategoryResponse: {
+            /** Format: int64 */
+            id?: number;
+            code?: string;
+            name_ru?: string;
+            name_ky?: string;
+            name_ja?: string;
         };
         ApiResponseListParcel: {
             success?: boolean;
@@ -1814,7 +1849,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
                 "application/json": components["schemas"]["ClaimRequest"];
             };
@@ -1833,7 +1868,9 @@ export interface operations {
     };
     listPreAlerts: {
         parameters: {
-            query?: never;
+            query?: {
+                status?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2336,28 +2373,6 @@ export interface operations {
             };
         };
     };
-    track: {
-        parameters: {
-            query: {
-                number: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseParcelTrackResponse"];
-                };
-            };
-        };
-    };
     me: {
         parameters: {
             query?: never;
@@ -2447,6 +2462,28 @@ export interface operations {
             };
         };
     };
+    search: {
+        parameters: {
+            query: {
+                number: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseParcelSearchResponse"];
+                };
+            };
+        };
+    };
     get_1: {
         parameters: {
             query?: never;
@@ -2514,6 +2551,26 @@ export interface operations {
             };
         };
     };
+    listCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListCategoryResponse"];
+                };
+            };
+        };
+    };
     disputed: {
         parameters: {
             query?: never;
@@ -2577,8 +2634,8 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
-            200: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };

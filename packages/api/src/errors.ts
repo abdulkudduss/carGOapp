@@ -24,6 +24,7 @@ export const KNOWN_ERROR_CODES = [
   'CANNOT_DISPUTE', // 422 — dispute: parcel is own/UNCLAIMED, dispute meaningless
   'CONFIRMATION_REQUIRED', // 409 — issuance complete: OTP-confirmed OR (skip + signature) not met
   'INVALID_STATUS', // 409 — issuance complete: parcel was issued in a parallel issuance
+  'PRE_ALERT_DUPLICATE', // 409 — create pre-alert: an active pre-alert with this track already exists
 ] as const;
 
 export type KnownErrorCode = (typeof KNOWN_ERROR_CODES)[number];
