@@ -2,10 +2,14 @@
 
 Frontend monorepo for **CARGO** — карго-доставка Япония → Кыргызстан.
 
-> This repository is **infrastructure only**: a skeleton that wires three apps to
-> three shared packages across web, PWA, and React Native. There is no product
+> This repository is **infrastructure only**: a skeleton that wires the apps to
+> three shared packages across web and React Native. There is no product
 > code, design, routing, state management, or real components yet — those arrive
 > in later steps.
+
+> **Note on ПВЗ:** the standalone PWA `apps/pvz` has been removed. ПВЗ
+> functionality is implemented as a native stack inside `apps/mobile` (role
+> `KG_WORKER`); see `CARGO_Frontend_TZ_v1.3.md` §7.
 
 ## Requirements
 
@@ -26,7 +30,6 @@ cargo-frontend/
 │  └─ ui/       @cargo/ui      — web components    (placeholder export)
 └─ apps/
    ├─ web-ops/  Vite + React + TS + Tailwind
-   ├─ pvz/      Vite + React + TS + Tailwind + vite-plugin-pwa (installable PWA "CARGO PVZ")
    └─ mobile/   Expo (React Native) + TS
 ```
 
@@ -34,9 +37,9 @@ Internal packages are consumed as `workspace:*` dependencies under the `@cargo/*
 scope. They export their **TypeScript source directly** (`exports → ./src/index.ts`),
 so there is no build step — Vite, Metro, and `tsc` each transpile the source.
 
-Every one of the three apps imports `{ tokens }` from `@cargo/tokens` and renders
-it on a stub screen (`CARGO <app>`). That import is the proof that cross-package
-wiring works on each platform.
+Every app imports `{ tokens }` from `@cargo/tokens` and renders it on a stub
+screen (`CARGO <app>`). That import is the proof that cross-package wiring works
+on each platform.
 
 ## Commands
 
@@ -50,7 +53,6 @@ Run each app:
 
 ```bash
 pnpm dev:web-ops   # Vite dev server for apps/web-ops
-pnpm dev:pvz       # Vite dev server for apps/pvz (PWA)
 pnpm dev:mobile    # expo start for apps/mobile
 ```
 
@@ -62,11 +64,10 @@ pnpm lint          # ESLint (flat config, typescript-eslint recommended)
 pnpm format        # Prettier --write .
 ```
 
-Production builds for the web apps:
+Production build for the web app:
 
 ```bash
 pnpm --filter web-ops build
-pnpm --filter pvz build      # also emits sw.js + manifest.webmanifest
 ```
 
 ## Expo in a pnpm monorepo (the important part)
@@ -93,8 +94,8 @@ is intentionally out of scope). That proves the **type-level** import of
 `@cargo/tokens` resolves. Metro's *runtime* resolution is configured per Expo's
 guide above but is **not** exercised by `tsc` — to verify it for real, run
 `pnpm dev:mobile` (or `pnpm --filter mobile exec expo export`) on a machine with
-the Expo toolchain. The web apps (`web-ops`, `pvz`), by contrast, are verified
-end-to-end because their production builds run as part of the checks below.
+the Expo toolchain. The web app (`web-ops`), by contrast, is verified
+end-to-end because its production build runs as part of the checks below.
 
 ## Toolchain notes
 
@@ -116,8 +117,7 @@ end-to-end because their production builds run as part of the checks below.
 On Node 22.22.3 / pnpm 11.5.3:
 
 - ✅ `pnpm install` — clean
-- ✅ `pnpm typecheck` — green across all 6 packages
+- ✅ `pnpm typecheck` — green across all packages
 - ✅ `pnpm lint` — clean
 - ✅ `pnpm --filter web-ops build` — succeeds
-- ✅ `pnpm --filter pvz build` — succeeds (PWA manifest + service worker emitted)
 - ✅ `pnpm --filter mobile exec tsc --noEmit` — green

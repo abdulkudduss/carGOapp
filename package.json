@@ -9,7 +9,6 @@
   },
   "scripts": {
     "dev:web-ops": "pnpm --filter web-ops dev",
-    "dev:pvz": "pnpm --filter pvz dev",
     "dev:mobile": "pnpm --filter mobile start",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
