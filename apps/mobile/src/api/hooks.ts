@@ -24,6 +24,7 @@ type ParcelSearchResponse = schema.components['schemas']['ParcelSearchResponse']
 type PreAlert = schema.components['schemas']['PreAlertResponse'];
 type CreatePreAlertRequest = schema.components['schemas']['CreatePreAlertRequest'];
 type Category = schema.components['schemas']['CategoryResponse'];
+type Pvz = schema.components['schemas']['PvzResponse'];
 
 // otp/request returns ApiResponseMapStringInteger → data is a string→int map; the
 // resend cooldown is `retry_after_sec` (confirmed against the live backend). The
@@ -189,6 +190,37 @@ export function useDeletePreAlert() {
   return useMutation<void, unknown, number>({
     mutationFn: (id) => api.delete<void>(`/api/v1/me/pre-alerts/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: preAlertsQueryKey }),
+  });
+}
+
+// Preferred PVZ (ПВЗ) — the client's default pickup point (TZ §6.7). The list is
+// PUBLIC (Swagger: «Список активных ПВЗ (без авторизации)») so usePvzList passes
+// `auth: false`; the change is PATCH /me/preferred-pvz with the JWT. The list
+// changes rarely → 5-min staleTime. Setting the preference invalidates /me so the
+// profile's preferred_pvz_name/_id reflect the new choice on next render.
+const PVZ_STALE_MS = 5 * 60_000;
+
+export const pvzListQueryKey = ['pvz'] as const;
+
+/** GET /pvz — active pickup points ({ id, name, address }). Public, no token. */
+export function usePvzList() {
+  return useQuery<Pvz[]>({
+    queryKey: pvzListQueryKey,
+    queryFn: async () => {
+      const data = await api.get<Pvz[]>('/api/v1/pvz', { auth: false });
+      return data ?? [];
+    },
+    staleTime: PVZ_STALE_MS,
+  });
+}
+
+/** PATCH /me/preferred-pvz — set the default pickup point; refresh /me after. */
+export function useSetPreferredPvz() {
+  const queryClient = useQueryClient();
+  return useMutation<MeResponse, unknown, number>({
+    mutationFn: (warehouseId) =>
+      api.patch<MeResponse>('/api/v1/me/preferred-pvz', { warehouse_id: warehouseId }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: meQueryKey }),
   });
 }
 

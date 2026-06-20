@@ -23,6 +23,7 @@ export type ClientStackParamList = {
   ParcelDetail: { parcelId: string };
   TrackSearch: undefined;
   PreAlertList: undefined;
+  Profile: undefined;
 };
 
 export type ClientScreenProps<T extends keyof ClientStackParamList> = NativeStackScreenProps<

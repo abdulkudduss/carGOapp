@@ -12,6 +12,7 @@ import { ParcelListScreen } from '../screens/ParcelListScreen';
 import { ParcelDetailScreen } from '../screens/ParcelDetailScreen';
 import { TrackSearchScreen } from '../screens/TrackSearchScreen';
 import { PreAlertListScreen } from '../screens/PreAlertListScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
 import { role, space, type, weight } from '../ui/theme';
 import { t } from '../i18n';
 import type { ClientStackParamList } from './types';
@@ -53,6 +54,14 @@ export function ClientStack() {
                   {t('parcels.title')}
                 </Text>
               </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('profile.open')}
+                hitSlop={8}
+                onPress={() => navigation.navigate('Profile')}
+              >
+                <Text style={{ color: role.accent.primary, fontSize: type.lg.fontSize }}>👤</Text>
+              </Pressable>
             </View>
           ),
         })}
@@ -80,6 +89,7 @@ export function ClientStack() {
       <Stack.Screen name="ParcelDetail" component={ParcelDetailScreen} options={{ title: t('parcel.title') }} />
       <Stack.Screen name="TrackSearch" component={TrackSearchScreen} options={{ title: t('track.title') }} />
       <Stack.Screen name="PreAlertList" component={PreAlertListScreen} options={{ title: t('prealert.title') }} />
+      <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: t('profile.title') }} />
     </Stack.Navigator>
   );
 }
